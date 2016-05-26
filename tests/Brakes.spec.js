@@ -23,13 +23,6 @@ const defaultOptions = {
   timeout: 15000
 };
 
-const noop = function noop(foo, err, cb) {
-  if (typeof err === 'function') {
-    cb = err;
-    err = null;
-  }
-  cb(err ? new Error(err) : null, foo);
-};
 const nopr = function nopr(foo, err) {
   return new Promise((resolve, reject) => {
     if (err) reject(new Error(err));
@@ -56,30 +49,17 @@ describe('Brakes Class', () => {
     }
   });
   it('Should be an instance of EventEmitter', () => {
-    brake = new Brakes(noop);
+    brake = new Brakes(nopr);
     expect(brake).to.be.instanceof(EventEmitter);
   });
   it('Should be instantiated with default options', () => {
-    brake = new Brakes(noop);
+    brake = new Brakes(nopr);
     // const snapshotSpy = sinon.spy(brake._stats, 'startSnapshots');
     // const statsSpy = sinon.spy(brake, '_startStatsCheck');
     // expect(snapshotSpy.calledOnce).to.equal(true);
     // expect(statsSpy.calledOnce).to.equal(true);
     // expect(brake._stats).to.be.instanceof(Stats);
     expect(brake._opts).to.deep.equal(defaultOptions);
-  });
-  it('Should promisify the service func', () => {
-    brake = new Brakes(noop);
-    return brake._serviceCall('test').then((result) => {
-      expect(result).to.equal('test');
-    });
-  });
-  it('Should promisify and reject service func', () => {
-    brake = new Brakes(noop);
-    return brake._serviceCall(null, 'err').then(null, (err) => {
-      expect(err).to.be.instanceof(Error);
-      expect(err.message).to.equal('err');
-    });
   });
   it('Should accept a promise', () => {
     brake = new Brakes(nopr);
@@ -104,14 +84,14 @@ describe('Brakes Class', () => {
     const overrides = {
       name: 'allYourNameAreBelongToUs'
     };
-    brake = new Brakes(noop, overrides);
+    brake = new Brakes(nopr, overrides);
     expect(brake.name).to.deep.equal(overrides.name);
   });
   it('Should be instantiated with a group', () => {
     const overrides = {
       group: 'allYourGroupAreBelongToUs'
     };
-    brake = new Brakes(noop, overrides);
+    brake = new Brakes(nopr, overrides);
     expect(brake.group).to.deep.equal(overrides.group);
   });
   it('Should be instantiated with override options', () => {
@@ -127,7 +107,7 @@ describe('Brakes Class', () => {
       threshold: 0.3,
       timeout: 100
     };
-    brake = new Brakes(noop, overrides);
+    brake = new Brakes(nopr, overrides);
     expect(brake._opts).to.deep.equal(overrides);
   });
   it('Should Resolve a service call and trigger event', () => {
@@ -140,7 +120,7 @@ describe('Brakes Class', () => {
     });
   });
   it('Should Reject a service call and trigger event', () => {
-    brake = new Brakes(noop);
+    brake = new Brakes(nopr);
     const spy = sinon.spy(() => {});
     brake.on('failure', spy);
     return brake.exec(null, 'err').then(null, err => {
@@ -177,7 +157,7 @@ describe('Brakes Class', () => {
   });
   it('Fallback should cascade fail', () => {
     brake = new Brakes(nopr);
-    brake.fallback(noop);
+    brake.fallback(nopr);
     return brake.exec(null, 'err').then(null, err => {
       expect(err).to.be.instanceof(Error);
       expect(err.message).to.equal('err');
