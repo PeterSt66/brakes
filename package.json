@@ -1,6 +1,6 @@
 {
   "name": "brakes",
-  "version": "2.0.1.1",
+  "version": "2.0.11",
   "description": "Node.js Circuit Breaker Pattern (forked from https://github.com/awolden/brakes.git)",
   "main": "index.js",
   "repository": {
